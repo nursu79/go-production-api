@@ -13,7 +13,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nursu79/go-production-api/internal/config"
 	deliveryHttp "github.com/nursu79/go-production-api/internal/delivery/http"
+	"github.com/nursu79/go-production-api/internal/delivery/http/handler"
 	"github.com/nursu79/go-production-api/internal/repository"
+	"github.com/nursu79/go-production-api/internal/usecase"
 	"github.com/nursu79/go-production-api/pkg/logger"
 )
 
@@ -46,8 +48,13 @@ func main() {
 		}
 	}
 
-	// Initialize dependency injection & routing
-	router := deliveryHttp.NewRouter(dbPool)
+	// Initialize Dependency Injection
+	userRepo := repository.NewUserRepository(dbPool)
+	userUsecase := usecase.NewUserUsecase(userRepo, cfg.JwtSecret, cfg.JwtRefreshSecret)
+	userHandler := handler.NewUserHandler(userUsecase)
+
+	// Initialize routing
+	router := deliveryHttp.NewRouter(dbPool, userHandler, cfg.JwtSecret)
 
 	// Configure HTTP server
 	srv := &http.Server{

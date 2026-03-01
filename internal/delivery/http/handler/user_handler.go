@@ -1,0 +1,128 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/nursu79/go-production-api/internal/delivery/http/response"
+	"github.com/nursu79/go-production-api/internal/domain"
+)
+
+type UserHandler struct {
+	userUsecase domain.UserUsecase
+}
+
+// NewUserHandler instantiates the User delivery endpoints.
+func NewUserHandler(userUsecase domain.UserUsecase) *UserHandler {
+	return &UserHandler{
+		userUsecase: userUsecase,
+	}
+}
+
+// RegisterRequest represents the expected payload for registering a user.
+type RegisterRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// RegisterResponse outlines the safe fields to return back strictly filtering password content.
+type RegisterResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// Register acts as the POST endpoint for /api/v1/auth/register handling validation wrapping.
+func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var req RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.RespondError(w, domain.ErrValidation)
+		return
+	}
+
+	// Delegate processing to usecase
+	user, err := h.userUsecase.Register(r.Context(), req.Email, req.Password)
+	if err != nil {
+		response.RespondError(w, err)
+		return
+	}
+
+	// Map domain response securely into a DTO before sending
+	resp := RegisterResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	response.RespondJSON(w, http.StatusCreated, resp)
+}
+
+// LoginRequest represents the user login payload.
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// LoginResponse returns the dual token payloads.
+type LoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// Login verifies credentials and returns JWT tokens.
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.RespondError(w, domain.ErrValidation)
+		return
+	}
+
+	accessToken, refreshToken, err := h.userUsecase.Login(r.Context(), req.Email, req.Password)
+	if err != nil {
+		response.RespondError(w, err)
+		return
+	}
+
+	resp := LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+	response.RespondJSON(w, http.StatusOK, resp)
+}
+
+// GetMe fetches the currently authenticated user's profile making sure to strip out the password.
+func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	// Extract sub (uuid string) safely injected from JWTMiddleware
+	sub, ok := r.Context().Value(domain.UserIDKey).(string)
+	if !ok {
+		response.RespondJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized context payload"})
+		return
+	}
+
+	id, err := uuid.Parse(sub)
+	if err != nil {
+		response.RespondJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid user identity format"})
+		return
+	}
+
+	// Fetch the complete user profile via Usecase
+	user, err := h.userUsecase.GetProfile(r.Context(), id)
+	if err != nil {
+		response.RespondError(w, err)
+		return
+	}
+
+	// Mask out the password via the clean DTO struct
+	resp := RegisterResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	response.RespondJSON(w, http.StatusOK, resp)
+}

@@ -9,9 +9,11 @@ import (
 )
 
 type Config struct {
-	AppPort string `env:"APP_PORT,required"`
-	DBUrl   string `env:"DB_URL,required"`
-	AppEnv  string `env:"APP_ENV" envDefault:"development"`
+	AppPort          string `env:"APP_PORT,required"`
+	DBUrl            string `env:"DB_URL,required"`
+	AppEnv           string `env:"APP_ENV" envDefault:"development"`
+	JwtSecret        string `env:"JWT_SECRET,required"`
+	JwtRefreshSecret string `env:"JWT_REFRESH_SECRET,required"`
 }
 
 // Load reads configuration from .env and maps it to the Config struct.
