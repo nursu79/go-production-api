@@ -70,6 +70,35 @@ func (r *userRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain
 	return toDomainUser(usr), nil
 }
 
+// GetAllUsers retrieves all un-deleted users sequentially.
+func (r *userRepository) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
+	users, err := r.q.GetAllUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var dUsers []*domain.User
+	for _, u := range users {
+		dUsers = append(dUsers, toDomainUser(u))
+	}
+
+	return dUsers, nil
+}
+
+// DeleteUser sets the deleted_at flag acting as a soft-delete constraint safely.
+func (r *userRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	pgID := pgtype.UUID{Bytes: id, Valid: true}
+	err := r.q.SoftDeleteUser(ctx, pgID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
 // toDomainUser maps the SQLC generated model to the abstracted domain User.
 func toDomainUser(s storage.User) *domain.User {
 	domainUser := &domain.User{

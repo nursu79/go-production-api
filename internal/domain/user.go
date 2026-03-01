@@ -24,6 +24,8 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
+	GetAllUsers(ctx context.Context) ([]*User, error)
+	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
 
 // UserUsecase defines the contract for user business logic.
@@ -31,4 +33,6 @@ type UserUsecase interface {
 	Register(ctx context.Context, email, password string) (*User, error)
 	Login(ctx context.Context, email, password string) (accessToken string, refreshToken string, err error)
 	GetProfile(ctx context.Context, id uuid.UUID) (*User, error)
+	GetAllUsers(ctx context.Context) ([]*User, error)
+	DeleteUser(ctx context.Context, id uuid.UUID) error
 }

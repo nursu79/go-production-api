@@ -101,3 +101,15 @@ func (u *userUsecase) Login(ctx context.Context, email, password string) (string
 func (u *userUsecase) GetProfile(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	return u.userRepo.GetUserByID(ctx, id)
 }
+
+// GetAllUsers delegates database reads of multiple rows safely.
+func (u *userUsecase) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
+	return u.userRepo.GetAllUsers(ctx)
+}
+
+// DeleteUser safely strips the entity delegating removal directly to soft deletes.
+func (u *userUsecase) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	// A strictly layered architecture can validate if the user being deleted isn't deleting themselves, etc.,
+	// but the base prompt didn't ask for contextual cross-reference deletion, so we simply delegate.
+	return u.userRepo.DeleteUser(ctx, id)
+}

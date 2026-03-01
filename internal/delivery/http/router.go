@@ -9,7 +9,7 @@ import (
 )
 
 // NewRouter initializes and configures the standard chi router.
-func NewRouter(dbPool *pgxpool.Pool, userHandler *handler.UserHandler, jwtSecret string) *chi.Mux {
+func NewRouter(dbPool *pgxpool.Pool, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler, jwtSecret string) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Use standard middleware for recovery and logging
@@ -33,6 +33,14 @@ func NewRouter(dbPool *pgxpool.Pool, userHandler *handler.UserHandler, jwtSecret
 		r.Route("/users", func(r chi.Router) {
 			r.Use(authMiddleware.JWTMiddleware(jwtSecret))
 			r.Get("/me", userHandler.GetMe)
+		})
+
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(authMiddleware.JWTMiddleware(jwtSecret))
+			r.Use(authMiddleware.AuthorizeRole("admin"))
+
+			r.Get("/users", adminHandler.GetAllUsers)
+			r.Delete("/users/{id}", adminHandler.DeleteUser)
 		})
 	})
 

@@ -52,9 +52,10 @@ func main() {
 	userRepo := repository.NewUserRepository(dbPool)
 	userUsecase := usecase.NewUserUsecase(userRepo, cfg.JwtSecret, cfg.JwtRefreshSecret)
 	userHandler := handler.NewUserHandler(userUsecase)
+	adminHandler := handler.NewAdminHandler(userUsecase)
 
 	// Initialize routing
-	router := deliveryHttp.NewRouter(dbPool, userHandler, cfg.JwtSecret)
+	router := deliveryHttp.NewRouter(dbPool, userHandler, adminHandler, cfg.JwtSecret)
 
 	// Configure HTTP server
 	srv := &http.Server{
