@@ -174,4 +174,6 @@ curl -i -X GET https://go-production-api-production-35b9.up.railway.app/api/v1/u
 curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/logout \
   -H "Authorization: Bearer {{ACCESS_TOKEN}}"
 ```
-
+Accounts                 Password           Role  
+user@example.com         password123        user
+Sumeya@example.com       admin              admin
