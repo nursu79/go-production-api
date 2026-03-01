@@ -1,5 +1,5 @@
 # Stage 1: Build the Go application
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -31,6 +31,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/api .
+COPY --from=builder --chown=appuser:appgroup /app/migrations ./migrations
 
 # Copy the .env file if it exists (for standalone testing, though docker-compose often mounts it or uses env_file)
 # We don't strictly require it, config.Load handles missing .env gracefully.

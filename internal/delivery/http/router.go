@@ -33,10 +33,10 @@ func NewRouter(dbPool *pgxpool.Pool, redisClient *redis.Client, userHandler *han
 	r.Use(middleware.Recoverer)
 
 	// Initialize handlers
-	healthHandler := NewHealthHandler(dbPool)
+	healthHdl := handler.NewHealthHandler(dbPool, redisClient)
 
 	// Register routes
-	r.Get("/health", healthHandler.HealthStatus)
+	r.Get("/health", healthHdl.HealthCheck)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
