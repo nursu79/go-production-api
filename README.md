@@ -2,7 +2,7 @@
 
 A 12-factor compliant, production-grade REST API built with Go (1.23+), following Clean Architecture principles for maximum maintainability and testability.
 
-## 1. Executive Summary
+## 1. Executive Summary as given here
 
 This API serves as a robust foundation for modern web projects. It is engineered with a focus on:
 - **Clean Architecture**: Decoupling business logic from external dependencies (DBs, frameworks).
