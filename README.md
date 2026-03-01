@@ -8,8 +8,8 @@ This API serves as a robust foundation for modern web projects. It is engineered
 - **Clean Architecture**: Decoupling business logic from external dependencies (DBs, frameworks).
 - **Scalability**: Stateless JWT authentication and distributed Redis caching/rate-limiting.
 - **Security**: Argon2/Bcrypt password hashing, dual-token strategy (Access/Refresh), RBAC, and IP-based rate limiting.
-- **Observability**: Structured JSON logging with `request_id` propagation and panic recovery.
-- **Reliability**: Graceful degradation—if Redis fails, the system continues to serve requests via Postgres.
+- **Observability**: Structured JSON logging with `request_id` propagation, panic recovery, and **Deep Health Diagnostics** (reporting raw errors in `/health`).
+- **Reliability**: Graceful degradation—if Redis fails, the system continues to serve requests via Postgres. Supports `REDIS_URL` for seamless cloud integration (Railway, Render).
 
 ## 2. High-Level Architecture Diagram
 

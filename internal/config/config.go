@@ -18,11 +18,12 @@ type Config struct {
 	RedisHost        string   `env:"REDIS_HOST" envDefault:"localhost"`
 	RedisPort        string   `env:"REDIS_PORT" envDefault:"6379"`
 	RedisPassword    string   `env:"REDIS_PASSWORD" envDefault:""`
+	RedisUrl         string   `env:"REDIS_URL" envDefault:""`
 }
 
 // String explicitly masks secrets ensuring configuration dumps never leak sensitive properties into structured logs safely.
 func (c *Config) String() string {
-	return fmt.Sprintf("AppPort:%s | AppEnv:%s | DBUrl:[REDACTED] | JwtSecret:[REDACTED] | JwtRefreshSecret:[REDACTED] | CorsOrigins:[%v] | RedisHost:%s | RedisPort:%s | RedisPassword:[REDACTED]", 
+	return fmt.Sprintf("AppPort:%s | AppEnv:%s | DBUrl:[REDACTED] | JwtSecret:[REDACTED] | JwtRefreshSecret:[REDACTED] | CorsOrigins:[%v] | RedisHost:%s | RedisPort:%s | RedisPassword:[REDACTED] | RedisUrl:[REDACTED]", 
 		c.AppPort, c.AppEnv, c.CorsOrigins, c.RedisHost, c.RedisPort)
 }
 

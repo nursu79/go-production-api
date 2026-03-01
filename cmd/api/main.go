@@ -50,7 +50,7 @@ func main() {
 	}
 
 	// Initialize Dependency Injection
-	redisClient := redis.NewRedisClient(context.Background(), cfg.RedisHost, cfg.RedisPort, cfg.RedisPassword)
+	redisClient := redis.NewRedisClient(context.Background(), cfg.RedisUrl, cfg.RedisHost, cfg.RedisPort, cfg.RedisPassword)
 
 	userRepo := repository.NewUserRepository(dbPool)
 	userUsecase := usecase.NewUserUsecase(userRepo, redisClient, cfg.JwtSecret, cfg.JwtRefreshSecret)
