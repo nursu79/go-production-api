@@ -55,7 +55,7 @@ func main() {
 	adminHandler := handler.NewAdminHandler(userUsecase)
 
 	// Initialize routing
-	router := deliveryHttp.NewRouter(dbPool, userHandler, adminHandler, cfg.JwtSecret)
+	router := deliveryHttp.NewRouter(dbPool, userHandler, adminHandler, cfg)
 
 	// Configure HTTP server
 	srv := &http.Server{
@@ -118,7 +118,7 @@ func initDB(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {
 				return pool, nil
 			}
 		}
-		
+
 		slog.Warn("Failed to connect to database, retrying...", "attempt", i+1, "error", err)
 		time.Sleep(retryDelay)
 	}

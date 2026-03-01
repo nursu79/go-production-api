@@ -13,7 +13,7 @@ import (
 // RunMigrations executes 'up' migrations utilizing golang-migrate/migrate.
 func RunMigrations(dbURL string, sourceURL string) error {
 	slog.Info("Running database migrations...")
-	
+
 	m, err := migrate.New(sourceURL, dbURL)
 	if err != nil {
 		return fmt.Errorf("failed to init migration: %w", err)

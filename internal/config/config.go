@@ -9,11 +9,17 @@ import (
 )
 
 type Config struct {
-	AppPort          string `env:"APP_PORT,required"`
-	DBUrl            string `env:"DB_URL,required"`
-	AppEnv           string `env:"APP_ENV" envDefault:"development"`
-	JwtSecret        string `env:"JWT_SECRET,required"`
-	JwtRefreshSecret string `env:"JWT_REFRESH_SECRET,required"`
+	AppPort          string   `env:"APP_PORT,required"`
+	DBUrl            string   `env:"DB_URL,required"`
+	AppEnv           string   `env:"APP_ENV" envDefault:"development"`
+	JwtSecret        string   `env:"JWT_SECRET,required"`
+	JwtRefreshSecret string   `env:"JWT_REFRESH_SECRET,required"`
+	CorsOrigins      []string `env:"CORS_ORIGINS" envSeparator:"," envDefault:"http://localhost:3000"`
+}
+
+// String explicitly masks secrets ensuring configuration dumps never leak sensitive properties into structured logs safely.
+func (c *Config) String() string {
+	return fmt.Sprintf("AppPort:%s | AppEnv:%s | DBUrl:[REDACTED] | JwtSecret:[REDACTED] | JwtRefreshSecret:[REDACTED] | CorsOrigins:[%v]", c.AppPort, c.AppEnv, c.CorsOrigins)
 }
 
 // Load reads configuration from .env and maps it to the Config struct.
