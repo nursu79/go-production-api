@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nursu79/go-production-api/internal/config"
 	deliveryHttp "github.com/nursu79/go-production-api/internal/delivery/http"
+	"github.com/nursu79/go-production-api/internal/repository"
 	"github.com/nursu79/go-production-api/pkg/logger"
 )
 
@@ -35,6 +36,15 @@ func main() {
 		os.Exit(1)
 	}
 	defer dbPool.Close()
+
+	// Run migrations if in development environment
+	if cfg.AppEnv == "development" {
+		sourceURL := "file://migrations"
+		if err := repository.RunMigrations(cfg.DBUrl, sourceURL); err != nil {
+			slog.Error("Database migration failed", "error", err)
+			os.Exit(1)
+		}
+	}
 
 	// Initialize dependency injection & routing
 	router := deliveryHttp.NewRouter(dbPool)

@@ -11,6 +11,7 @@ import (
 type Config struct {
 	AppPort string `env:"APP_PORT,required"`
 	DBUrl   string `env:"DB_URL,required"`
+	AppEnv  string `env:"APP_ENV" envDefault:"development"`
 }
 
 // Load reads configuration from .env and maps it to the Config struct.

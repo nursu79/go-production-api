@@ -34,3 +34,11 @@ test:
 
 tidy:
 	go mod tidy
+
+migrate-up:
+	@echo "Running up migrations..."
+	migrate -path migrations -database "$(DB_URL)" -verbose up
+
+migrate-down:
+	@echo "Running down migrations..."
+	migrate -path migrations -database "$(DB_URL)" -verbose down -all
