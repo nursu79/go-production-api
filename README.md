@@ -18,10 +18,10 @@ graph TD
     Client[Client] --> G[Gateway/Router]
     
     subgraph Middleware Layer
-        G --> RL[IP Rate Limiter<br/>(Redis/Memory)]
+        G --> RL["IP Rate Limiter\n(Redis/Memory)"]
         RL --> L[Structured Logger]
         L --> Rec[Panic Recovery]
-        Rec --> Auth[JWT Auth<br/>(Dual Token + Blacklist)]
+        Rec --> Auth["JWT Auth\n(Dual Token + Blacklist)"]
         Auth --> RB[Role-Based Access Control]
     end
 
@@ -38,6 +38,7 @@ graph TD
         R --> DB[(PostgreSQL)]
         U -.-> C[(Redis Cache-Aside)]
     end
+
 
 
 ## 3. The 'Clean Architecture' Implementation
