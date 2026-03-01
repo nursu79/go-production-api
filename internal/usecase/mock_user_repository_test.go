@@ -14,6 +14,7 @@ type mockUserRepository struct {
 	GetUserByIDFn    func(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	GetAllUsersFn    func(ctx context.Context) ([]*domain.User, error)
 	DeleteUserFn     func(ctx context.Context, id uuid.UUID) error
+	UpdateUserFn     func(ctx context.Context, id uuid.UUID, email, role string) (*domain.User, error)
 }
 
 func (m *mockUserRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
@@ -49,4 +50,11 @@ func (m *mockUserRepository) DeleteUser(ctx context.Context, id uuid.UUID) error
 		return m.DeleteUserFn(ctx, id)
 	}
 	return nil
+}
+
+func (m *mockUserRepository) UpdateUser(ctx context.Context, id uuid.UUID, email, role string) (*domain.User, error) {
+	if m.UpdateUserFn != nil {
+		return m.UpdateUserFn(ctx, id, email, role)
+	}
+	return nil, nil
 }

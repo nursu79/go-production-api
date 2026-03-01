@@ -9,10 +9,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nursu79/go-production-api/internal/delivery/http/response"
 	"github.com/nursu79/go-production-api/internal/domain"
+	"github.com/nursu79/go-production-api/internal/infrastructure/redis"
 )
 
-// JWTMiddleware extracts and validates the Bearer token before passing requests.
-func JWTMiddleware(secret string) func(http.Handler) http.Handler {
+// JWTMiddleware extracts and validates the Bearer token before passing requests evaluating Redis blacklists synchronously preventing revived logouts.
+func JWTMiddleware(secret string, redisClient *redis.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -54,6 +55,22 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
+			// Extract JWT ID (jti)
+			jti, ok := claims["jti"].(string)
+			if !ok {
+				response.RespondJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing token jti"})
+				return
+			}
+
+			// Validate against Redis Blacklist (Logout check)
+			if redisClient != nil && redisClient.Client != nil {
+				isBlacklisted, err := redisClient.Client.Exists(r.Context(), "blacklist:"+jti).Result()
+				if err == nil && isBlacklisted > 0 {
+					response.RespondJSON(w, http.StatusUnauthorized, map[string]string{"error": "token has been revoked"})
+					return
+				}
+			}
+
 			// Extract User Subject
 			sub, ok := claims["sub"].(string)
 			if !ok {
@@ -70,6 +87,7 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 			// Inject into Request Context
 			ctx := context.WithValue(r.Context(), domain.UserIDKey, sub)
 			ctx = context.WithValue(ctx, domain.UserRoleKey, role)
+			ctx = context.WithValue(ctx, domain.JTIKey, jti)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

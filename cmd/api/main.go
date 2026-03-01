@@ -14,6 +14,7 @@ import (
 	"github.com/nursu79/go-production-api/internal/config"
 	deliveryHttp "github.com/nursu79/go-production-api/internal/delivery/http"
 	"github.com/nursu79/go-production-api/internal/delivery/http/handler"
+	"github.com/nursu79/go-production-api/internal/infrastructure/redis"
 	"github.com/nursu79/go-production-api/internal/repository"
 	"github.com/nursu79/go-production-api/internal/usecase"
 	"github.com/nursu79/go-production-api/pkg/logger"
@@ -49,13 +50,15 @@ func main() {
 	}
 
 	// Initialize Dependency Injection
+	redisClient := redis.NewRedisClient(context.Background(), cfg.RedisHost, cfg.RedisPort, cfg.RedisPassword)
+
 	userRepo := repository.NewUserRepository(dbPool)
-	userUsecase := usecase.NewUserUsecase(userRepo, cfg.JwtSecret, cfg.JwtRefreshSecret)
+	userUsecase := usecase.NewUserUsecase(userRepo, redisClient, cfg.JwtSecret, cfg.JwtRefreshSecret)
 	userHandler := handler.NewUserHandler(userUsecase)
 	adminHandler := handler.NewAdminHandler(userUsecase)
 
 	// Initialize routing
-	router := deliveryHttp.NewRouter(dbPool, userHandler, adminHandler, cfg)
+	router := deliveryHttp.NewRouter(dbPool, redisClient, userHandler, adminHandler, cfg)
 
 	// Configure HTTP server
 	srv := &http.Server{

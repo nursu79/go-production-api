@@ -20,7 +20,11 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
+
 
 func prepareTestApp(t *testing.T) (*postgres.PostgresContainer, *httptest.Server) {
 	ctx := context.Background()
@@ -50,7 +54,7 @@ func prepareTestApp(t *testing.T) (*postgres.PostgresContainer, *httptest.Server
 
 	// Run Migrations
 	migrationPath := filepath.Join("..", "..", "..", "..", "migrations")
-	err = repository.RunMigrations("file://"+migrationPath, connStr)
+	err = repository.RunMigrations(connStr, "file://"+migrationPath)
 	if err != nil {
 		t.Fatalf("failed to run migrations: %v", err)
 	}
@@ -76,11 +80,11 @@ func prepareTestApp(t *testing.T) (*postgres.PostgresContainer, *httptest.Server
 	}
 
 	userRepo := repository.NewUserRepository(dbPool)
-	userUc := usecase.NewUserUsecase(userRepo, cfg.JwtSecret, cfg.JwtRefreshSecret)
+	userUc := usecase.NewUserUsecase(userRepo, nil, cfg.JwtSecret, cfg.JwtRefreshSecret)
 	userHandler := handler.NewUserHandler(userUc)
 	adminHandler := handler.NewAdminHandler(userUc)
 
-	router := deliveryHttp.NewRouter(dbPool, userHandler, adminHandler, cfg)
+	router := deliveryHttp.NewRouter(dbPool, nil, userHandler, adminHandler, cfg)
 	server := httptest.NewServer(router)
 
 	return pgContainer, server

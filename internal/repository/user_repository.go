@@ -70,6 +70,30 @@ func (r *userRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain
 	return toDomainUser(usr), nil
 }
 
+// UpdateUser patches an existing profile entity gracefully mapping duplicate mappings natively returning validated domains safely.
+func (r *userRepository) UpdateUser(ctx context.Context, id uuid.UUID, email, role string) (*domain.User, error) {
+	pgID := pgtype.UUID{Bytes: id, Valid: true}
+	usr, err := r.q.UpdateUser(ctx, storage.UpdateUserParams{
+		ID:      pgID,
+		Column2: email,
+		Column3: role,
+	})
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { // unique_violation
+			return nil, domain.ErrDuplicateEmail
+		}
+		return nil, err
+	}
+
+	return toDomainUser(usr), nil
+}
+
 // GetAllUsers retrieves all un-deleted users sequentially.
 func (r *userRepository) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
 	users, err := r.q.GetAllUsers(ctx)

@@ -15,7 +15,7 @@ func TestUserUsecase_Register(t *testing.T) {
 	mockRepo := &mockUserRepository{}
 	jwtSecret := "test-secret"
 	jwtRefresh := "test-refresh"
-	userUsecase := usecase.NewUserUsecase(mockRepo, jwtSecret, jwtRefresh)
+	userUsecase := usecase.NewUserUsecase(mockRepo, nil, jwtSecret, jwtRefresh)
 
 	t.Run("successful registration", func(t *testing.T) {
 		mockRepo.CreateUserFn = func(ctx context.Context, user *domain.User) (*domain.User, error) {
@@ -65,7 +65,7 @@ func TestUserUsecase_Login(t *testing.T) {
 	mockRepo := &mockUserRepository{}
 	jwtSecret := "test-secret"
 	jwtRefresh := "test-refresh"
-	userUsecase := usecase.NewUserUsecase(mockRepo, jwtSecret, jwtRefresh)
+	userUsecase := usecase.NewUserUsecase(mockRepo, nil, jwtSecret, jwtRefresh)
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.MinCost)
 

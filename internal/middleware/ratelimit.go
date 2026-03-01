@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/nursu79/go-production-api/internal/delivery/http/response"
+	"github.com/nursu79/go-production-api/internal/infrastructure/redis"
 	"golang.org/x/time/rate"
 )
 
@@ -39,25 +40,52 @@ func init() {
 }
 
 // RateLimit creates an IP-based rate limiter middleware.
-// Defaults to 100 requests per 15 minutes (approx 1 request every 9 seconds), but allowing a burst of up to 100.
-// We'll give a more reasonable API default of, say, 5 requests per second, burst of 20.
-func RateLimit(r rate.Limit, burst int) func(http.Handler) http.Handler {
+// Leverages Redis for distributed tracking across clusters. Defaults gracefully to local memory tracking if Redis crashes.
+func RateLimit(r rate.Limit, burst int, redisClient *redis.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			ip := getIP(req)
 
-			mu.Lock()
-			if _, found := clients[ip]; !found {
-				clients[ip] = &client{limiter: rate.NewLimiter(r, burst)}
-			}
-			clients[ip].lastSeen = time.Now()
+			// 1. If Redis is unavailable (nil), fallback to local memory tracking (Graceful Degradation)
+			if redisClient == nil || redisClient.Client == nil {
+				mu.Lock()
+				if _, found := clients[ip]; !found {
+					clients[ip] = &client{limiter: rate.NewLimiter(r, burst)}
+				}
+				clients[ip].lastSeen = time.Now()
 
-			if !clients[ip].limiter.Allow() {
+				if !clients[ip].limiter.Allow() {
+					mu.Unlock()
+					response.RespondJSON(w, http.StatusTooManyRequests, map[string]string{"error": "too many requests"})
+					return
+				}
 				mu.Unlock()
+				next.ServeHTTP(w, req)
+				return
+			}
+
+			// 2. Redis Distributed Tracking
+			ctx := req.Context()
+			key := "ratelimit:" + ip
+			
+			// Increment the request count natively
+			count, err := redisClient.Client.Incr(ctx, key).Result()
+			if err != nil {
+				// Redis error (e.g. timeout), let it pass to keep API available
+				next.ServeHTTP(w, req)
+				return
+			}
+
+			// If it's the first request, set an expiry (e.g., limit X requests per 10 seconds)
+			if count == 1 {
+				redisClient.Client.Expire(ctx, key, 10*time.Second) 
+			}
+
+			// Apply the distributed burst threshold constraints
+			if count > int64(burst) {
 				response.RespondJSON(w, http.StatusTooManyRequests, map[string]string{"error": "too many requests"})
 				return
 			}
-			mu.Unlock()
 
 			next.ServeHTTP(w, req)
 		})

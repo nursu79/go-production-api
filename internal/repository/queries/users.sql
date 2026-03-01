@@ -8,8 +8,18 @@ INSERT INTO users (
 ) RETURNING *;
 
 -- name: GetUserByID :one
-SELECT * FROM users
-WHERE id = $1 AND deleted_at IS NULL LIMIT 1;
+SELECT id, email, password, role, created_at, updated_at, deleted_at
+FROM users
+WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: UpdateUser :one
+UPDATE users
+SET
+  email = COALESCE(NULLIF($2, ''), email),
+  role = COALESCE(NULLIF($3, ''), role),
+  updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, email, password, role, created_at, updated_at, deleted_at;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users

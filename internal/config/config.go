@@ -15,11 +15,15 @@ type Config struct {
 	JwtSecret        string   `env:"JWT_SECRET,required"`
 	JwtRefreshSecret string   `env:"JWT_REFRESH_SECRET,required"`
 	CorsOrigins      []string `env:"CORS_ORIGINS" envSeparator:"," envDefault:"http://localhost:3000"`
+	RedisHost        string   `env:"REDIS_HOST" envDefault:"localhost"`
+	RedisPort        string   `env:"REDIS_PORT" envDefault:"6379"`
+	RedisPassword    string   `env:"REDIS_PASSWORD" envDefault:""`
 }
 
 // String explicitly masks secrets ensuring configuration dumps never leak sensitive properties into structured logs safely.
 func (c *Config) String() string {
-	return fmt.Sprintf("AppPort:%s | AppEnv:%s | DBUrl:[REDACTED] | JwtSecret:[REDACTED] | JwtRefreshSecret:[REDACTED] | CorsOrigins:[%v]", c.AppPort, c.AppEnv, c.CorsOrigins)
+	return fmt.Sprintf("AppPort:%s | AppEnv:%s | DBUrl:[REDACTED] | JwtSecret:[REDACTED] | JwtRefreshSecret:[REDACTED] | CorsOrigins:[%v] | RedisHost:%s | RedisPort:%s | RedisPassword:[REDACTED]", 
+		c.AppPort, c.AppEnv, c.CorsOrigins, c.RedisHost, c.RedisPort)
 }
 
 // Load reads configuration from .env and maps it to the Config struct.

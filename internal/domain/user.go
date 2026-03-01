@@ -24,6 +24,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, email, role string) (*User, error)
 	GetAllUsers(ctx context.Context) ([]*User, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
@@ -32,7 +33,9 @@ type UserRepository interface {
 type UserUsecase interface {
 	Register(ctx context.Context, email, password string) (*User, error)
 	Login(ctx context.Context, email, password string) (accessToken string, refreshToken string, err error)
+	Logout(ctx context.Context, jti string, expTime time.Duration) error
 	GetProfile(ctx context.Context, id uuid.UUID) (*User, error)
+	UpdateProfile(ctx context.Context, id uuid.UUID, email, role string) (*User, error)
 	GetAllUsers(ctx context.Context) ([]*User, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
