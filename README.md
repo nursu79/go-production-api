@@ -136,6 +136,14 @@ curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/
   }'
 ```
 
+**JSON Body (Postman):**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
 ### 3. Login
 ```bash
 curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/login \
@@ -144,6 +152,14 @@ curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/
     "email": "user@example.com",
     "password": "password123"
   }'
+```
+
+**JSON Body (Postman):**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
 ```
 
 ### 4. Fetch Profile (Protected)

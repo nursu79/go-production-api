@@ -40,13 +40,11 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Run migrations if in development environment
-	if cfg.AppEnv == "development" {
-		sourceURL := "file://migrations"
-		if err := repository.RunMigrations(cfg.DBUrl, sourceURL); err != nil {
-			slog.Error("Database migration failed", "error", err)
-			os.Exit(1)
-		}
+	// Run migrations
+	sourceURL := "file://migrations"
+	if err := repository.RunMigrations(cfg.DBUrl, sourceURL); err != nil {
+		slog.Error("Database migration failed", "error", err)
+		os.Exit(1)
 	}
 
 	// Initialize Dependency Injection
