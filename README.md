@@ -116,3 +116,46 @@ Quality is baked in through:
 | `GET` | `/api/v1/admin/users` | List all users | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/users/{id}` | Soft delete user (Invalidates Cache) | Yes (Admin) |
 | `GET` | `/health` | API Health Check | No |
+
+## 8. Testing with Postman & cURL
+
+All commands below use cURL, which can be **imported directly into Postman** (File > Import > Paste Raw Text).
+
+### 1. Health Check
+```bash
+curl -i https://go-production-api-production-35b9.up.railway.app/health
+```
+
+### 2. Register User
+```bash
+curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+### 3. Login
+```bash
+curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+### 4. Fetch Profile (Protected)
+*Replace `{{ACCESS_TOKEN}}` with the token returned from the login response.*
+```bash
+curl -i -X GET https://go-production-api-production-35b9.up.railway.app/api/v1/users/me \
+  -H "Authorization: Bearer {{ACCESS_TOKEN}}"
+```
+
+### 5. Logout (Revoke Session)
+```bash
+curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/logout \
+  -H "Authorization: Bearer {{ACCESS_TOKEN}}"
+```
+
