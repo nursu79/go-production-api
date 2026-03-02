@@ -88,6 +88,10 @@ Quality is baked in through:
 
 ## 7. Testing with Postman & cURL
 
+### 🚀 Postman Workspace
+Join the official Postman Workspace to test the API instantly:  
+**[Join Postman Team & Workspace](https://app.getpostman.com/join-team?invite_code=7fa80b8e30c7f7514a92aef71023f1f6742de6f0941e052fceb1350b9aed6c53&target_code=f77b38e0af9ece0c9bfbc8ee41e8d798)**
+
 All commands below use cURL, which can be **imported directly into Postman** (File > Import > Paste Raw Text).
 
 ### 1. Health Check
