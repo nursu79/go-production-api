@@ -11,38 +11,7 @@ This API serves as a robust foundation for modern web projects. It is engineered
 - **Observability**: Structured JSON logging with `request_id` propagation, panic recovery, and **Deep Health Diagnostics** (reporting raw errors in `/health`).
 - **Reliability**: Graceful degradation—if Redis fails, the system continues to serve requests via Postgres. Supports `REDIS_URL` for seamless cloud integration (Railway, Render).
 
-## 2. High-Level Architecture Diagram
-
-```mermaid
-graph TD
-    Client[Client] --> G[Gateway/Router]
-    
-    subgraph Middleware Layer
-        G --> RL["IP Rate Limiter\n(Redis/Memory)"]
-        RL --> L[Structured Logger]
-        L --> Rec[Panic Recovery]
-        Rec --> Auth["JWT Auth\n(Dual Token + Blacklist)"]
-        Auth --> RB[Role-Based Access Control]
-    end
-
-    subgraph Delivery Layer
-        RB --> H[HTTP Handlers]
-    end
-
-    subgraph Business Logic Layer
-        H --> U[User / Admin UseCases]
-    end
-
-    subgraph Data Layer
-        U --> R[Repositories]
-        R --> DB[(PostgreSQL)]
-        U -.-> C[(Redis Cache-Aside)]
-    end
-
-
-
-
-## 3. The 'Clean Architecture' Implementation
+## 2. The 'Clean Architecture' Implementation
 
 The project follows the flow: **Delivery -> Usecase -> Repository**.
 
@@ -52,7 +21,7 @@ The project follows the flow: **Delivery -> Usecase -> Repository**.
 - **/internal/repository**: Data access implementations. Maps domain requests to SQLC-generated queries.
 - **/internal/delivery/http**: Framework-specific code (Chi router, handlers, DTOs).
 
-## 4. Security & Performance Features
+## 3. Security & Performance Features
 
 ### Authentication & Authorization
 - **Argon2/Bcrypt**: Industry-standard password hashing (cost 12).
@@ -68,7 +37,7 @@ The project follows the flow: **Delivery -> Usecase -> Repository**.
 - **Global Rate Limiting**: Distributed IP-based limiting using Redis (falls back to local memory if Redis is down).
 - **Secure Headers**: `X-Content-Type-Options`, `X-Frame-Options`, and strict `CORS` policies.
 
-## 5. The Testing Fortress
+## 4. The Testing Fortress
 
 Quality is baked in through:
 - **Unit Testing**: 100% logic coverage in `/internal/usecase` using manual mocks.
@@ -78,7 +47,7 @@ Quality is baked in through:
     - `govulncheck` for security vulnerabilities.
     - `-race` detector for concurrency safety.
 
-## 6. Getting Started
+## 5. Getting Started
 
 ### Prerequisites
 - Go 1.23+
@@ -104,7 +73,7 @@ Quality is baked in through:
    make run
    ```
 
-## 7. API Documentation (Sneak Peek)
+## 6. API Documentation (Sneak Peek)
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
@@ -117,7 +86,7 @@ Quality is baked in through:
 | `DELETE` | `/api/v1/admin/users/{id}` | Soft delete user (Invalidates Cache) | Yes (Admin) |
 | `GET` | `/health` | API Health Check | No |
 
-## 8. Testing with Postman & cURL
+## 7. Testing with Postman & cURL
 
 All commands below use cURL, which can be **imported directly into Postman** (File > Import > Paste Raw Text).
 
@@ -174,6 +143,12 @@ curl -i -X GET https://go-production-api-production-35b9.up.railway.app/api/v1/u
 curl -i -X POST https://go-production-api-production-35b9.up.railway.app/api/v1/auth/logout \
   -H "Authorization: Bearer {{ACCESS_TOKEN}}"
 ```
-Accounts                 Password           Role  
-user@example.com         password123        user
-Sumeya@example.com       admin              admin
+
+## 8. Test Accounts
+
+Use these credentials to test different levels of access:
+
+| Email | Password | Role |
+| :--- | :--- | :--- |
+| `admin@example.com` | `admin` | **Admin** |
+| `user@example.com` | `password123` | **User** |
